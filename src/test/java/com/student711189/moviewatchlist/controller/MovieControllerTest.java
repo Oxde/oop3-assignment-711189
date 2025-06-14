@@ -1,6 +1,8 @@
 package com.student711189.moviewatchlist.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.student711189.moviewatchlist.exception.MovieAlreadyExistsException;
+import com.student711189.moviewatchlist.exception.MovieNotFoundException;
 import com.student711189.moviewatchlist.model.AddMovieRequest;
 import com.student711189.moviewatchlist.model.MovieDto;
 import com.student711189.moviewatchlist.model.UpdateMovieRequest;
@@ -54,7 +56,7 @@ class MovieControllerTest {
         testMovieDto.setDirector("Test Director");
         testMovieDto.setPlot("Test plot");
         testMovieDto.setWatched(false);
-        testMovieDto.setRating(null);
+        testMovieDto.setRating(0);
 
         addMovieRequest = new AddMovieRequest("Test Movie", "2023");
         updateMovieRequest = new UpdateMovieRequest(true, 4);
@@ -80,13 +82,28 @@ class MovieControllerTest {
     void addMovie_WhenMovieExists_ShouldReturnConflict() throws Exception {
         // Arrange
         when(movieService.addMovie(anyString(), anyString()))
-                .thenThrow(new IllegalArgumentException("Movie already exists"));
+                .thenThrow(new MovieAlreadyExistsException("Movie already exists"));
 
         // Act & Assert
         mockMvc.perform(post("/api/movies")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(addMovieRequest)))
                 .andExpect(status().isConflict());
+
+        verify(movieService).addMovie("Test Movie", "2023");
+    }
+
+    @Test
+    void addMovie_WhenMovieNotFoundOnExternalApi_ShouldReturnNotFound() throws Exception {
+        // Arrange
+        when(movieService.addMovie(anyString(), anyString()))
+                .thenThrow(new MovieNotFoundException("Movie not found on OMDb"));
+
+        // Act & Assert
+        mockMvc.perform(post("/api/movies")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(addMovieRequest)))
+                .andExpect(status().isNotFound());
 
         verify(movieService).addMovie("Test Movie", "2023");
     }
@@ -128,6 +145,33 @@ class MovieControllerTest {
     }
 
     @Test
+    void getMovie_WhenMovieExists_ShouldReturnMovie() throws Exception {
+        // Arrange
+        when(movieService.getMovie(1L)).thenReturn(testMovieDto);
+
+        // Act & Assert
+        mockMvc.perform(get("/api/movies/1"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.title").value("Test Movie"))
+                .andExpect(jsonPath("$.year").value("2023"));
+
+        verify(movieService).getMovie(1L);
+    }
+
+    @Test
+    void getMovie_WhenMovieNotFound_ShouldReturnNotFound() throws Exception {
+        // Arrange
+        when(movieService.getMovie(999L))
+                .thenThrow(new MovieNotFoundException("Movie not found"));
+
+        // Act & Assert
+        mockMvc.perform(get("/api/movies/999"))
+                .andExpect(status().isNotFound());
+
+        verify(movieService).getMovie(999L);
+    }
+
+    @Test
     void updateMovie_WhenValidRequest_ShouldReturnUpdatedMovie() throws Exception {
         // Arrange
         testMovieDto.setWatched(true);
@@ -147,18 +191,33 @@ class MovieControllerTest {
     }
 
     @Test
-    void updateMovie_WhenMovieNotFound_ShouldReturnBadRequest() throws Exception {
+    void updateMovie_WhenMovieNotFound_ShouldReturnNotFound() throws Exception {
         // Arrange
         when(movieService.updateMovie(anyLong(), any(), any()))
-                .thenThrow(new IllegalArgumentException("Movie not found"));
+                .thenThrow(new MovieNotFoundException("Movie not found"));
 
         // Act & Assert
         mockMvc.perform(put("/api/movies/999")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(updateMovieRequest)))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isNotFound());
 
         verify(movieService).updateMovie(999L, true, 4);
+    }
+
+    @Test
+    void updateMovie_WhenInvalidRating_ShouldReturnBadRequest() throws Exception {
+        // Arrange
+        when(movieService.updateMovie(anyLong(), any(), any()))
+                .thenThrow(new IllegalArgumentException("Rating must be between 1 and 5"));
+
+        // Act & Assert
+        mockMvc.perform(put("/api/movies/1")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(new UpdateMovieRequest(true, 6))))
+                .andExpect(status().isBadRequest());
+
+        verify(movieService).updateMovie(1L, true, 6);
     }
 
     @Test
@@ -176,7 +235,7 @@ class MovieControllerTest {
     @Test
     void deleteMovie_WhenMovieNotFound_ShouldReturnNotFound() throws Exception {
         // Arrange
-        doThrow(new IllegalArgumentException("Movie not found"))
+        doThrow(new MovieNotFoundException("Movie not found"))
                 .when(movieService).deleteMovie(999L);
 
         // Act & Assert
@@ -184,12 +243,5 @@ class MovieControllerTest {
                 .andExpect(status().isNotFound());
 
         verify(movieService).deleteMovie(999L);
-    }
-
-    @Test
-    void getMovie_ShouldReturnNotImplemented() throws Exception {
-        // Act & Assert
-        mockMvc.perform(get("/api/movies/1"))
-                .andExpect(status().isNotImplemented());
     }
 } 
