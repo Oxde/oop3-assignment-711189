@@ -25,6 +25,11 @@ This project is a Spring Boot application for managing a personal movie watchlis
    ```bash
    mvn test
    ```
+   
+   To see a complete API demonstration:
+   ```bash
+   mvn test -Dtest=ApiDemonstrationTest
+   ```
 
 4. **Run the application:**
    ```bash
