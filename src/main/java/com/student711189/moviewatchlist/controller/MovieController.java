@@ -1,5 +1,7 @@
 package com.student711189.moviewatchlist.controller;
 
+import com.student711189.moviewatchlist.exception.MovieAlreadyExistsException;
+import com.student711189.moviewatchlist.exception.MovieNotFoundException;
 import com.student711189.moviewatchlist.model.AddMovieRequest;
 import com.student711189.moviewatchlist.model.MovieDto;
 import com.student711189.moviewatchlist.model.UpdateMovieRequest;
@@ -36,9 +38,12 @@ public class MovieController {
         try {
             MovieDto movie = movieService.addMovie(request.getTitle(), request.getYear());
             return ResponseEntity.status(HttpStatus.CREATED).body(movie);
-        } catch (IllegalArgumentException e) {
-            log.error("Error adding movie: {}", e.getMessage());
+        } catch (MovieAlreadyExistsException e) {
+            log.error("Movie already exists: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.CONFLICT).build();
+        } catch (MovieNotFoundException e) {
+            log.error("Movie not found on external APIs: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         } catch (Exception e) {
             log.error("Unexpected error adding movie", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
@@ -78,6 +83,9 @@ public class MovieController {
             MovieDto updatedMovie = movieService.updateMovie(
                     id, request.getWatched(), request.getRating());
             return ResponseEntity.ok(updatedMovie);
+        } catch (MovieNotFoundException e) {
+            log.error("Movie not found: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         } catch (IllegalArgumentException e) {
             log.error("Error updating movie: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
@@ -98,8 +106,8 @@ public class MovieController {
         try {
             movieService.deleteMovie(id);
             return ResponseEntity.noContent().build();
-        } catch (IllegalArgumentException e) {
-            log.error("Error deleting movie: {}", e.getMessage());
+        } catch (MovieNotFoundException e) {
+            log.error("Movie not found: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         } catch (Exception e) {
             log.error("Unexpected error deleting movie", e);
@@ -115,8 +123,15 @@ public class MovieController {
     public ResponseEntity<MovieDto> getMovie(@PathVariable Long id) {
         log.info("Fetching movie with id: {}", id);
         
-        // TODO: Implement get movie by ID in service
-        // For now, return not implemented
-        return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).build();
+        try {
+            MovieDto movie = movieService.getMovie(id);
+            return ResponseEntity.ok(movie);
+        } catch (MovieNotFoundException e) {
+            log.error("Movie not found: {}", e.getMessage());
+            return ResponseEntity.notFound().build();
+        } catch (Exception e) {
+            log.error("Unexpected error fetching movie", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 } 

@@ -73,4 +73,52 @@ application-local.properties
 application-prod.properties
 
 # Test coverage reports
-.jacoco/ 
+.jacoco/
+
+# Eclipse
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+
+# NetBeans
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+build/
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+# VS Code
+.vscode/
+
+# Mac
+.DS_Store
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Linux
+*~
+
+# Temporary Files
+*.tmp
+*.temp
+
+# Spring Boot
+*.original
+
+# Application specific
+images/
+test-images/
+
+# Development files (keep locally but don't commit)
+plan.txt
+setup-java21.sh 
