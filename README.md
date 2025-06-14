@@ -1,90 +1,78 @@
 # Movie Watchlist - Student 711189
 
-This project is a Spring Boot application for managing a personal movie watchlist. It integrates with external movie APIs (OMDb and TMDb) to fetch movie details and download images.
+A Spring Boot application for managing a personal movie watchlist with external API integration (OMDb + TMDb), multi-threading, and REST APIs.
 
-## For Teachers: How to Run This Project
+## For Teachers: Quick Start
 
-### Prerequisites
-- **Java 21** (Important: This project requires Java 21 specifically)
-- Maven 3.6+
+### Option 1: Automatic Setup (Recommended)
+```bash
+git clone <repository-url>
+cd oop3-assignment-711189
+./setup-for-teachers.sh
+```
+This script will:
+- ✅ Configure Java 21 automatically
+- ✅ Run all 28 tests
+- ✅ Verify everything works
+- ✅ Show you available commands
 
-### Quick Setup Instructions
+### Option 2: Manual Setup
+**Requirements:** Java 21 and Maven 3.6+
 
-1. **Clone the repository:**
+1. **Set Java 21:**
    ```bash
-   git clone <repository-url>
-   cd oop3-assignment-711189
+   source .envrc    # Sets Java 21 for this project
    ```
 
-2. **Set Java 21 (if needed):**
-   - If you have Java 21 installed: `export JAVA_HOME=/path/to/java21`
-   - On macOS with Homebrew: `export JAVA_HOME=/opt/homebrew/Cellar/openjdk@21/21.0.7/libexec/openjdk.jdk/Contents/Home`
-   - Or use the provided setup script: `source .envrc`
-
-3. **Run tests:**
+2. **Run tests:**
    ```bash
-   mvn test
+   mvn test         # All 28 tests
    ```
    
-   To see a complete API demonstration:
+3. **See API demo:**
    ```bash
    mvn test -Dtest=ApiDemonstrationTest
    ```
 
-4. **Run the application:**
+4. **Run application:**
    ```bash
    mvn spring-boot:run
    ```
 
-5. **Access the API:**
-   - Base URL: `http://localhost:8080/api/movies`
-   - H2 Database Console: `http://localhost:8080/h2-console` (JDBC URL: `jdbc:h2:mem:watchlistdb`)
+## What This Project Demonstrates
 
-### API Endpoints
+✅ **External API Integration** - OMDb + TMDb APIs  
+✅ **Multi-threading** - Java 21 virtual threads for parallel image downloads  
+✅ **REST API** - Complete CRUD operations with pagination  
+✅ **Database** - JPA/Hibernate with H2 in-memory database  
+✅ **File Operations** - Automatic image download and storage  
+✅ **Error Handling** - Comprehensive validation and exception handling  
+✅ **Testing** - 28 tests covering all functionality  
 
-- `POST /api/movies` - Add a new movie (body: `{"title": "Inception", "year": "2010"}`)
-- `GET /api/movies?page=0&size=10` - List movies (paginated)
-- `GET /api/movies/{id}` - Get specific movie
-- `PUT /api/movies/{id}` - Update movie (body: `{"watched": true, "rating": 5}`)
-- `DELETE /api/movies/{id}` - Delete movie
+## API Endpoints
 
-### What This Project Demonstrates
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/api/movies` | Add movie (calls external APIs, downloads images) |
+| GET | `/api/movies` | List movies (paginated) |
+| GET | `/api/movies/{id}` | Get specific movie |
+| PUT | `/api/movies/{id}` | Update movie (watched status, rating) |
+| DELETE | `/api/movies/{id}` | Delete movie |
 
-- **Multi-threading**: Downloads 3 images per movie in parallel using Java 21 virtual threads
-- **External API Integration**: Fetches data from OMDb API and images from TMDb API
-- **Database Operations**: Uses H2 database with JPA for persistence
-- **RESTful API**: Complete CRUD operations with proper HTTP status codes
-- **Pagination**: Supports pagination for movie listing
-- **File I/O**: Downloads and manages movie images on the file system
-- **Java Streams**: Uses Streams API for data processing and filtering
-- **Unit Testing**: Comprehensive test coverage with JUnit 5 and Mockito
+## URLs When Running
 
-### Technical Stack
+- **API Base:** http://localhost:8080/api/movies
+- **H2 Database Console:** http://localhost:8080/h2-console
+- **Health Check:** http://localhost:8080/actuator/health
 
-- Java 21
-- Spring Boot 3.2.0
-- Spring Data JPA
-- H2 Database
-- Maven
-- JUnit 5 + Mockito
+## Test Summary
 
-### Notes
+- **28 tests total** - All passing ✅
+- **MovieServiceTest** (8 tests) - Core business logic
+- **MovieControllerTest** (12 tests) - REST API endpoints  
+- **ApiDemonstrationTest** (7 tests) - Feature showcase for teachers
+- **ApplicationTest** (1 test) - Spring Boot integration
 
-- API keys are already configured for testing
-- The application creates an `images/` directory for downloaded movie images
-- All tests should pass when using Java 21
-- Database is in-memory, so data resets on each restart
+---
 
-### Project Structure
-
-```
-src/
-├── main/java/com/student711189/moviewatchlist/
-│   ├── controller/     # REST endpoints
-│   ├── service/        # Business logic
-│   ├── model/          # Entities and DTOs
-│   └── repository/     # Data access
-└── test/               # Unit tests
-```
-
-Student ID: 711189 
+**Note:** This project requires Java 21. The setup script handles this automatically. 
